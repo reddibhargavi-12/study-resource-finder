@@ -1,0 +1,25 @@
+{
+  "name": "study-resource-finder",
+  "version": "1.0.0",
+  "description": "Study Resource Finder - AI-Powered Study Resource Discovery Platform (MERN Stack MVP)",
+  "author": "Reddi Bhargavi (Roll No: 24B61A05C9) - SITAM CSE",
+  "scripts": {
+    "dev": "node -e \"console.log('Use npm run server and npm run client in separate terminals or concurrently')\"",
+    "client": "npm --prefix client run dev",
+    "server": "npm --prefix server run dev",
+    "build": "npm --prefix client run build",
+    "install:all": "npm --prefix server install && npm --prefix client install",
+    "start": "npm --prefix server start"
+  },
+  "keywords": [
+    "study-resource-finder",
+    "mern",
+    "react",
+    "vite",
+    "nodejs",
+    "express",
+    "gemini-ai",
+    "educational-platform"
+  ],
+  "license": "MIT"
+}
