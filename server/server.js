@@ -18,7 +18,8 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: '*', // Allow frontend access in development and deployment
+  origin: true,
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));

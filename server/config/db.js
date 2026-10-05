@@ -1,31 +1,51 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
 
 let isConnected = false;
 
+// Configure public DNS servers to resolve MongoDB Atlas SRV records reliably
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (dnsErr) {
+  // Non-fatal if runtime does not permit custom DNS servers
+}
+
 export const connectDB = async () => {
-  const mongoURI = process.env.MONGO_URI;
+  const mongoURI = process.env.MONGODB_URI || process.env.MONGO_URI;
 
   if (!mongoURI) {
-    console.log('ℹ️  No MONGO_URI provided in environment. Running in graceful offline/in-memory mode (stateless per SRS v1.0).');
+    console.warn('⚠️  [MongoDB] No MONGODB_URI found in environment variables (.env).');
     return false;
   }
 
+  // Safe URI for logging without exposing credentials
+  const sanitizedURI = mongoURI.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
+
   try {
+    console.log(`📡 [MongoDB] Attempting connection to Atlas cluster...`);
     const conn = await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 4000,
+      serverSelectionTimeoutMS: 8000,
     });
+
     isConnected = true;
-    console.log(`✅ MongoDB Connected successfully: ${conn.connection.host}`);
+    console.log(`✅ [MongoDB Atlas] Connected successfully!`);
+    console.log(`   Host:     ${conn.connection.host}`);
+    console.log(`   Database: ${conn.connection.name}`);
     return true;
   } catch (error) {
-    console.warn(`⚠️  MongoDB connection failed: ${error.message}`);
-    console.log('ℹ️  Falling back to in-memory/localStorage sync mode. Demo will continue running smoothly without interruptions.');
+    console.error(`❌ [MongoDB Atlas] Connection failed: ${error.message}`);
+    console.warn(`   Target:   ${sanitizedURI}`);
+    console.log('ℹ️  Operating in resilient in-memory mode so operations continue.');
     isConnected = false;
     return false;
   }
 };
 
 export const getDBStatus = () => ({
-  connected: isConnected,
-  mode: isConnected ? 'MongoDB Atlas' : 'In-Memory / Browser LocalStorage (Free Tier Demo Mode)'
+  connected: isConnected || mongoose.connection.readyState === 1,
+  host: mongoose.connection?.host || null,
+  database: mongoose.connection?.name || 'study-resource-finder-1',
+  mode: (isConnected || mongoose.connection.readyState === 1)
+    ? 'MongoDB Atlas (Connected)'
+    : 'Offline / In-Memory'
 });
